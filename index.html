@@ -43,7 +43,7 @@ button:hover{opacity:.9} button.ghost{background:#fff;color:var(--brand);border:
       <!-- Logo do símbolo embutida (data URI simples para não depender de arquivos externos) -->
       <h1><img alt="Logo Ruê"
        src="./SIMBOLO-01.jpg" style="height:50px;width:auto;border-radius:8px;object-fit:contain"        Ruê Cachos – Precificação <span class="pill">v1.2</span></h1>
-      <div class="sub">Informe o preço e a quantidade por embalagem (tinta e oxidante). Depois digite o consumido e, se houver, até dois outros produtos. O app calcula <strong>ÓTIMO</strong>, <strong>IDEAL</strong> e <strong>LIMITE</strong> com metas travadas (8% / 10% / 12%) e arredondamento em R$ 5.</div>
+      <div class="sub">Informe o preço e a quantidade por embalagem (tinta e oxidante). Depois digite o consumido e, se houver, até dois outros produtos. O app calcula <strong>ÓTIMO</strong>, <strong>IDEAL</strong> e <strong>LIMITE</strong> com metas travadas (8% / 10% / 12%).</div>
       <div class="actions" style="margin-top:10px">
         <button id="save" type="button">Salvar padrões</button>
         <button class="ghost" id="reset" type="button">Resetar</button>
@@ -56,9 +56,9 @@ button:hover{opacity:.9} button.ghost{background:#fff;color:var(--brand);border:
           <fieldset>
             <legend>Tinta</legend>
             <div class="row3">
-              <div><label>Preço do tubo (R$)</label><input type="text" inputmode="decimal" id="tuboPreco" value="60,00" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
-              <div><label>Quantidade por tubo (g)</label><input type="text" inputmode="numeric" id="tuboGramas" value="500" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
-              <div><label>Usado no atendimento (g)</label><input type="text" inputmode="numeric" id="tintaUsadaG" value="40" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
+              <div><label>Preço do tubo (R$)</label><input type="text" inputmode="decimal" id="tuboPreco" value="50,00" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
+              <div><label>Quantidade por tubo (g)</label><input type="text" inputmode="numeric" id="tuboGramas" value="60" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
+              <div><label>Usado no atendimento (g)</label><input type="text" inputmode="numeric" id="tintaUsadaG" value="0" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
             </div>
             <div class="hint">Preço calculado por grama: <span id="tintaRpg">R$ 0,00</span></div>
           </fieldset>
@@ -66,9 +66,9 @@ button:hover{opacity:.9} button.ghost{background:#fff;color:var(--brand);border:
           <fieldset>
             <legend>Oxidante</legend>
             <div class="row3">
-              <div><label>Preço da embalagem (R$)</label><input type="text" inputmode="decimal" id="oxPreco" value="20,00" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
+              <div><label>Preço da embalagem (R$)</label><input type="text" inputmode="decimal" id="oxPreco" value="124,00" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
               <div><label>Quantidade por embalagem (ml)</label><input type="text" inputmode="numeric" id="oxMlEmb" value="1000" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
-              <div><label>Usado no atendimento (ml)</label><input type="text" inputmode="numeric" id="oxUsadoMl" value="60" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
+              <div><label>Usado no atendimento (ml)</label><input type="text" inputmode="numeric" id="oxUsadoMl" value="0" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
             </div>
             <div class="hint">Preço calculado por ml: <span id="oxRpm">R$ 0,00</span></div>
           </fieldset>
@@ -81,7 +81,7 @@ button:hover{opacity:.9} button.ghost{background:#fff;color:var(--brand);border:
               <div><label>Quantidade</label><input type="text" inputmode="decimal" id="o1Qtd" value="0" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
             </div>
             <div class="row3">
-              <div><label>Nome do item 2</label><input type="text" id="o2Nome" value="Aditivo/Booster"></div>
+              <div><label>Nome do item 2</label><input type="text" id="o2Nome" value="Outros"></div>
               <div><label>Preço unitário (R$)</label><input type="text" inputmode="decimal" id="o2Preco" value="0,00" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
               <div><label>Quantidade</label><input type="text" inputmode="decimal" id="o2Qtd" value="0" oninput="calc()" onchange="calc()" onkeyup="calc()"></div>
             </div>
@@ -176,5 +176,6 @@ button:hover{opacity:.9} button.ghost{background:#fff;color:var(--brand);border:
   </script>
 </body>
 </html>
+
 
 
