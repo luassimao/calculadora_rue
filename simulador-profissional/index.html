@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Simulador Profissional • Do Corte ao Lucro</title>
+  <style>
+    :root{--bg:#1f100b;--card:#341c14;--card2:#442518;--accent:#ff8a3c;--text:#fff6f0;--muted:#e6c3ae;--line:#74412b;--bad:#8a2c2c;--mid:#8d5a10;--good:#186c3f}
+    *{box-sizing:border-box} body{margin:0;background:radial-gradient(circle at top,#3b2016, #1f100b 58%);color:var(--text);font-family:Georgia,'Times New Roman',serif}
+    .wrap{max-width:1000px;margin:28px auto;padding:16px}.card{background:linear-gradient(180deg,var(--card),var(--card2));border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    h1{margin:0 0 8px;font-size:clamp(28px,4vw,40px)} .sub{margin:0 0 14px;color:var(--muted);font-family:system-ui;line-height:1.45}
+    label{display:block;font-family:system-ui;font-size:13px;margin:9px 0 4px;color:#ffe8dc}
+    input{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:#fff7f1;color:#3e1f14;font-family:system-ui}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:850px){.row3,.row2{grid-template-columns:1fr}}
+    .btn{display:inline-block;padding:12px 14px;border-radius:10px;font-family:system-ui;font-weight:800;text-decoration:none;border:none;cursor:pointer}
+    .btn.main{background:var(--accent);color:#2c170f}.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    .hide{display:none}.hero{background:#fff0e5;color:#442315;border:2px solid var(--accent);border-radius:14px;padding:12px;margin-bottom:10px;font-family:system-ui}
+    .hero b{font-size:34px;display:block;color:#5e2f1b}
+    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:850px){.kpis{grid-template-columns:1fr}}
+    .tile{background:#fff4ed;color:#3c2015;border-radius:12px;padding:12px;font-family:system-ui}.tile span{font-size:12px;color:#7a4229}.tile b{display:block;font-size:23px;color:#542b19;margin-top:4px}
+    .alert{padding:12px;border-radius:10px;font-family:system-ui;font-weight:700}.bad{background:var(--bad)}.mid{background:var(--mid)}.good{background:var(--good)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Simulador profissional de ganho</h1>
+      <p class="sub">Veja seu valor da hora atual e descubra o preço ideal para alcançar o faturamento que você deseja.</p>
+      <div class="row3">
+        <div><label>1. Preço cobrado pelo serviço (R$)</label><input id="preco" type="number" step="0.01" value="0"></div>
+        <div><label>2. Percentual que o profissional recebe (%)</label><input id="percentual" type="number" step="0.01" value="40"></div>
+        <div><label>3. Atendimentos por dia</label><input id="atendDia" type="number" step="1" value="5"></div>
+      </div>
+      <div class="row3">
+        <div><label>4. Dias trabalhados no mês</label><input id="diasMes" type="number" step="1" value="22"></div>
+        <div><label>5. Tempo médio por atendimento (minutos)</label><input id="tempoMin" type="number" step="1" value="90"></div>
+        <div><label>6. Quanto gostaria de ganhar por hora (R$)</label><input id="horaDesejada" type="number" step="0.01" value="120"></div>
+      </div>
+    </div>
+
+    <div class="card" id="leadBox">
+      <p class="sub">Quer receber esse diagnóstico no WhatsApp?</p>
+      <div class="row2">
+        <div><label>Nome</label><input id="nome" type="text" placeholder="Seu nome"></div>
+        <div><label>WhatsApp</label><input id="whatsapp" type="tel" placeholder="(00) 00000-0000"></div>
+      </div>
+      <button class="btn main" id="verResultado" type="button" style="margin-top:10px">Ver meu resultado completo</button>
+    </div>
+
+    <div class="card hide" id="resultadoBox">
+      <div class="hero">
+        <span>Valor da hora atual</span>
+        <b id="rHoraAtual">R$ 0,00</b>
+      </div>
+      <div class="kpis">
+        <div class="tile"><span>Ganho por atendimento</span><b id="rAtendimento">R$ 0,00</b></div>
+        <div class="tile"><span>Ganho diário</span><b id="rDiario">R$ 0,00</b></div>
+        <div class="tile"><span>Ganho mensal</span><b id="rMensal">R$ 0,00</b></div>
+        <div class="tile"><span>Valor da hora desejado</span><b id="rHoraDesejada">R$ 0,00</b></div>
+        <div class="tile"><span>Diferença por hora</span><b id="rDifHora">R$ 0,00</b></div>
+        <div class="tile"><span>Preço ideal sugerido</span><b id="rPrecoIdeal">R$ 0,00</b></div>
+        <div class="tile"><span>Impacto mensal da diferença</span><b id="rImpacto">R$ 0,00</b></div>
+      </div>
+      <div id="alerta" class="alert" style="margin-top:10px"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <a class="btn main" href="https://docorteaolucro.com" target="_blank" rel="noopener" id="btnWorkshop">Quero aprender no Workshop</a>
+        <button class="btn ghost" id="btnWhats" type="button">Quero tirar dúvida no WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const money=(v)=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const track=(e)=>{ if(typeof fbq==='function') fbq('track',e); };
+const LEAD_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbydVzrgdg1nqP1YNKOp2-HvV7hk36lzuEa-xiO72Lmso91Sn_ATynb7VCjxb8p9X9BzAA/exec";
+
+async function sendLead(payload){
+  if(!LEAD_WEBHOOK_URL) return;
+  try{
+    await fetch(LEAD_WEBHOOK_URL,{
+      method:'POST',
+      mode:'no-cors',
+      body:JSON.stringify(payload)
+    });
+  }catch(err){
+    console.error('Falha ao enviar lead', err);
+  }
+}
+
+function calc(){
+  const preco=Number($('preco').value)||0;
+  const perc=(Number($('percentual').value)||0)/100;
+  const atendDia=Number($('atendDia').value)||0;
+  const diasMes=Number($('diasMes').value)||0;
+  const tempoHoras=(Number($('tempoMin').value)||0)/60;
+  const horaDesejada=Number($('horaDesejada').value)||0;
+
+  const ganhoAtendimento=preco*perc;
+  const ganhoDia=ganhoAtendimento*atendDia;
+  const ganhoMes=ganhoDia*diasMes;
+  const horaAtual=tempoHoras>0?ganhoAtendimento/tempoHoras:0;
+  const precoIdeal=perc>0?(horaDesejada*tempoHoras)/perc:0;
+  const difHora=horaDesejada-horaAtual;
+  const impactoMensal=difHora>0?difHora*tempoHoras*atendDia*diasMes:0;
+
+  $('rHoraAtual').textContent=money(horaAtual);
+  $('rAtendimento').textContent=money(ganhoAtendimento);
+  $('rDiario').textContent=money(ganhoDia);
+  $('rMensal').textContent=money(ganhoMes);
+  $('rHoraDesejada').textContent=money(horaDesejada);
+  $('rDifHora').textContent=money(difHora);
+  $('rPrecoIdeal').textContent=money(precoIdeal);
+  $('rImpacto').textContent=money(impactoMensal);
+
+  const a=$('alerta');
+  if(horaAtual < horaDesejada*0.7){a.className='alert bad';a.textContent='Alerta: seu valor da hora está baixo. Existe perda de faturamento relevante no mês.';}
+  else if(horaAtual < horaDesejada){a.className='alert mid';a.textContent='Atenção: você está perto do valor ideal, mas ainda pode ajustar preço e estratégia.';}
+  else{a.className='alert good';a.textContent='Excelente: seu valor da hora está no nível desejado ou acima.';}
+}
+
+['preco','percentual','atendDia','diasMes','tempoMin','horaDesejada'].forEach(id=>$(id).addEventListener('input',calc));
+$('verResultado').addEventListener('click',async ()=>{
+  if(!$('nome').value.trim()||!$('whatsapp').value.trim()) return alert('Preencha nome e WhatsApp para ver o resultado completo.');
+  $('resultadoBox').classList.remove('hide');
+  calc();
+  const payload={
+    nome:$('nome').value.trim(),
+    whatsapp:$('whatsapp').value.trim(),
+    origem_ferramenta:'simulador profissional',
+    data_hora:new Date().toISOString(),
+    resultado_principal:'valor da hora',
+    lucro_ou_valor_hora:$('rHoraAtual').textContent,
+    margem:''
+  };
+  await sendLead(payload);
+  track('Lead');
+  track('ViewContent');
+  $('resultadoBox').scrollIntoView({behavior:'smooth'});
+});
+$('btnWhats').addEventListener('click',()=>{
+  const msg='Oi, fiz o simulador de ganho e quero entender como aumentar meu faturamento';
+  const url=`https://wa.me/5511950757373?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
+  track('Contact');
+});
+$('btnWorkshop').addEventListener('click',()=>track('InitiateCheckout'));
+
+calc();
+</script>
+</body>
+</html>
