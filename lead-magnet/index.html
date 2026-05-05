@@ -82,6 +82,20 @@
 const $=(id)=>document.getElementById(id);
 const money=(v)=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const track=(e)=>{ if(typeof fbq==='function') fbq('track',e); };
+const LEAD_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbydVzrgdg1nqP1YNKOp2-HvV7hk36lzuEa-xiO72Lmso91Sn_ATynb7VCjxb8p9X9BzAA/exec";
+
+async function sendLead(payload){
+  if(!LEAD_WEBHOOK_URL) return;
+  try{
+    await fetch(LEAD_WEBHOOK_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+  }catch(err){
+    console.error('Falha ao enviar lead', err);
+  }
+}
 
 function addProduto(v={}){
   const el=document.createElement('div');
@@ -141,17 +155,28 @@ function calc(){
 $('addProduto').addEventListener('click',()=>addProduto());
 $('preco').addEventListener('input',calc);
 $('tempo').addEventListener('input',calc);
-$('verResultado').addEventListener('click',()=>{
+$('verResultado').addEventListener('click',async ()=>{
   if(!$('nome').value.trim()||!$('whatsapp').value.trim()) return alert('Preencha nome e WhatsApp para ver o resultado completo.');
-  track('Lead');
   $('resultadoBox').classList.remove('hide');
   calc();
+  const payload={
+    nome:$('nome').value.trim(),
+    whatsapp:$('whatsapp').value.trim(),
+    origem_ferramenta:'calculadora de lucro',
+    data_hora:new Date().toISOString(),
+    resultado_principal:'lucro por atendimento',
+    lucro_ou_valor_hora:$('lucroReal').textContent,
+    margem:$('rMargem').textContent
+  };
+  await sendLead(payload);
+  track('Lead');
   track('ViewContent');
   $('resultadoBox').scrollIntoView({behavior:'smooth'});
 });
 $('btnWhats').addEventListener('click',()=>{
-  const txt='Oi, fiz a calculadora de lucro e quero entender como melhorar meu resultado no salão.';
-  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank');
+  const txt='Oi, fiz a calculadora de lucro e quero entender como melhorar meu resultado no salão';
+  const url=`https://wa.me/5511950757373?text=${encodeURIComponent(txt)}`;
+  window.open(url,'_blank');
   track('Contact');
 });
 $('btnWorkshop').addEventListener('click',()=>track('InitiateCheckout'));

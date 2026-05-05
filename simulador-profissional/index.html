@@ -73,6 +73,20 @@
 const $=(id)=>document.getElementById(id);
 const money=(v)=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const track=(e)=>{ if(typeof fbq==='function') fbq('track',e); };
+const LEAD_WEBHOOK_URL = "";
+
+async function sendLead(payload){
+  if(!LEAD_WEBHOOK_URL) return;
+  try{
+    await fetch(LEAD_WEBHOOK_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+  }catch(err){
+    console.error('Falha ao enviar lead', err);
+  }
+}
 
 function calc(){
   const preco=Number($('preco').value)||0;
@@ -106,17 +120,28 @@ function calc(){
 }
 
 ['preco','percentual','atendDia','diasMes','tempoMin','horaDesejada'].forEach(id=>$(id).addEventListener('input',calc));
-$('verResultado').addEventListener('click',()=>{
+$('verResultado').addEventListener('click',async ()=>{
   if(!$('nome').value.trim()||!$('whatsapp').value.trim()) return alert('Preencha nome e WhatsApp para ver o resultado completo.');
-  track('Lead');
   $('resultadoBox').classList.remove('hide');
   calc();
+  const payload={
+    nome:$('nome').value.trim(),
+    whatsapp:$('whatsapp').value.trim(),
+    origem_ferramenta:'simulador profissional',
+    data_hora:new Date().toISOString(),
+    resultado_principal:'valor da hora',
+    lucro_ou_valor_hora:$('rHoraAtual').textContent,
+    margem:''
+  };
+  await sendLead(payload);
+  track('Lead');
   track('ViewContent');
   $('resultadoBox').scrollIntoView({behavior:'smooth'});
 });
 $('btnWhats').addEventListener('click',()=>{
-  const msg='Oi, fiz o simulador de ganho e quero entender como melhorar meu faturamento no salão.';
-  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  const msg='Oi, fiz o simulador de ganho e quero entender como aumentar meu faturamento';
+  const url=`https://wa.me/5511950757373?text=${encodeURIComponent(msg)}`;
+  window.open(url,'_blank');
   track('Contact');
 });
 $('btnWorkshop').addEventListener('click',()=>track('InitiateCheckout'));
