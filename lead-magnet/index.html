@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Diagnóstico de Lucro • Coloração</title>
+<style>
+:root{--bg:#2b140f;--panel:#3a1d15;--text:#fff7f3;--muted:#eecfbe;--accent:#ff8a3d;--border:#6b3b2c;--good:#22c55e;--mid:#f59e0b;--bad:#ef4444}
+*{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#2b140f,#1f0f0b);color:var(--text);font-family:Georgia, 'Times New Roman', serif}
+.container{max-width:980px;margin:24px auto;padding:16px}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px}
+h1{margin:0 0 8px;font-size:32px}.sub{color:var(--muted);font-family:system-ui;margin-bottom:12px} label{display:block;font-family:system-ui;font-size:13px;margin:8px 0 4px;color:#ffe8dc}
+input,select{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#fff7f3;color:#3b1d15;font-family:system-ui}
+.row{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.row2{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}@media(max-width:760px){.row,.row2{grid-template-columns:1fr}}
+.btn{background:var(--accent);border:none;color:#2b140f;padding:11px 13px;border-radius:10px;font-weight:700;cursor:pointer;font-family:system-ui}.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+.product{border:1px dashed var(--border);padding:10px;border-radius:12px;margin-top:10px}.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:760px){.kpis{grid-template-columns:1fr}}
+.tile{background:#fff3ec;color:#3a1d15;padding:12px;border-radius:12px}.tile b{display:block;font-size:22px;margin-top:4px}.hide{display:none}
+.alert{padding:12px;border-radius:10px;font-family:system-ui;font-weight:600}.bad{background:#7f1d1d}.mid{background:#78350f}.good{background:#14532d}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card">
+    <h1>Diagnóstico de lucro da coloração</h1>
+    <p class="sub">Descubra seu lucro real por atendimento, com produtos e custos operacionais.</p>
+
+    <div class="row">
+      <div><label>Tipo de serviço</label><select id="tipoServico"><option>Coloração padrão</option></select></div>
+      <div><label>Tempo de atendimento (minutos)</label><input id="tempo" type="number" value="120"></div>
+      <div><label>Preço cobrado (R$)</label><input id="preco" type="number" step="0.01" value="0"></div>
+    </div>
+
+    <div id="products"></div>
+    <button class="btn" id="addProduct" type="button" style="margin-top:10px">Adicionar produto</button>
+
+    <p class="sub" style="margin-top:12px">Custos fixos aplicados automaticamente: 35% custo fixo, 10% imposto e 4% taxa de pagamento.</p>
+  </div>
+
+  <div class="card" id="leadBox">
+    <p class="sub">Quer receber esse diagnóstico no WhatsApp?</p>
+    <div class="row2">
+      <div><label>Nome</label><input id="nome" type="text"></div>
+      <div><label>WhatsApp</label><input id="whatsapp" type="tel"></div>
+    </div>
+    <button class="btn" id="showResult" type="button" style="margin-top:10px">Ver meu resultado completo</button>
+  </div>
+
+  <div class="card hide" id="resultBox">
+    <div class="kpis">
+      <div class="tile">Preço cobrado<b id="rPreco">R$ 0,00</b></div>
+      <div class="tile">Custo produtos<b id="rProdutos">R$ 0,00</b></div>
+      <div class="tile">Custos operacionais (49%)<b id="rOp">R$ 0,00</b></div>
+      <div class="tile">Lucro por atendimento<b id="rLucro">R$ 0,00</b></div>
+      <div class="tile">Margem percentual<b id="rMargem">0%</b></div>
+      <div class="tile">Lucro mensal estimado<b id="rMensal">R$ 0,00</b></div>
+    </div>
+    <div id="interpretacao" class="alert" style="margin-top:10px"></div>
+    <p class="sub" style="margin-top:10px">Se você fizer 5 atendimentos por dia e trabalhar 22 dias, esse é seu lucro mensal estimado.</p>
+    <button class="btn" id="btnWhats" type="button">Quero tirar dúvida no WhatsApp</button>
+  </div>
+</div>
+
+<script>
+const $ = (id)=>document.getElementById(id);
+const money = (v)=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const track=(event)=>{ if(typeof fbq==='function') fbq('track',event); };
+
+function addProductRow(data={}){
+  const wrap=document.createElement('div');
+  wrap.className='product';
+  wrap.innerHTML=`
+    <div class="row">
+      <div><label>Nome</label><input class="pNome" type="text" value="${data.nome||''}"></div>
+      <div><label>Custo total do produto (R$)</label><input class="pCusto" type="number" step="0.01" value="${data.custo||0}"></div>
+      <div><label>Quantidade total (g ou ml)</label><input class="pQtdTotal" type="number" step="0.01" value="${data.total||0}"></div>
+    </div>
+    <div class="row2">
+      <div><label>Quantidade usada no atendimento</label><input class="pQtdUsada" type="number" step="0.01" value="${data.usada||0}"></div>
+      <div style="align-self:end"><button class="btn ghost pDel" type="button">Remover</button></div>
+    </div>`;
+  wrap.querySelector('.pDel').addEventListener('click',()=>{wrap.remove();calc();});
+  wrap.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+  $('products').appendChild(wrap);
+}
+
+function calc(){
+  const preco = Number($('preco').value)||0;
+  let custoProdutos=0;
+  document.querySelectorAll('.product').forEach(p=>{
+    const custo=Number(p.querySelector('.pCusto').value)||0;
+    const total=Number(p.querySelector('.pQtdTotal').value)||0;
+    const usada=Number(p.querySelector('.pQtdUsada').value)||0;
+    if(total>0) custoProdutos += (custo/total)*usada;
+  });
+  const custoOperacional = preco*0.49;
+  const custoTotal = custoProdutos + custoOperacional;
+  const lucro = preco - custoTotal;
+  const margem = preco>0 ? (lucro/preco)*100 : 0;
+  const mensal = lucro*5*22;
+
+  $('rPreco').textContent=money(preco);
+  $('rProdutos').textContent=money(custoProdutos);
+  $('rOp').textContent=money(custoOperacional);
+  $('rLucro').textContent=money(lucro);
+  $('rMargem').textContent=`${margem.toFixed(1).replace('.',',')}%`;
+  $('rMensal').textContent=money(mensal);
+
+  const box=$('interpretacao');
+  if(margem<20){ box.className='alert bad'; box.textContent='Alerta: sua margem está baixa. Você pode estar girando dinheiro sem lucro real.'; }
+  else if(margem<=40){ box.className='alert mid'; box.textContent='Atenção: sua margem está mediana. Existe espaço claro para melhorar seu lucro.'; }
+  else{ box.className='alert good'; box.textContent='Excelente: sua margem está saudável. Agora foque em manter consistência e escala.'; }
+}
+
+$('addProduct').addEventListener('click',()=>addProductRow());
+$('preco').addEventListener('input',calc);
+$('tempo').addEventListener('input',calc);
+$('showResult').addEventListener('click',()=>{
+  if(!$('nome').value.trim()||!$('whatsapp').value.trim()) return alert('Preencha nome e WhatsApp para ver o resultado completo.');
+  track('Lead');
+  $('resultBox').classList.remove('hide');
+  track('ViewContent');
+  calc();
+});
+$('btnWhats').addEventListener('click',()=>{
+  const msg='Oi, fiz a calculadora de lucro e quero entender como melhorar meu resultado no salão.';
+  window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`,'_blank');
+  track('Contact');
+});
+
+addProductRow({nome:'Coloração',custo:50,total:60,usada:30});
+calc();
+</script>
+</body>
+</html>
