@@ -73,14 +73,14 @@
 const $=(id)=>document.getElementById(id);
 const money=(v)=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const track=(e)=>{ if(typeof fbq==='function') fbq('track',e); };
-const LEAD_WEBHOOK_URL = "";
+const LEAD_WEBHOOK_URL = "https://script.google.com/macros/s/AKfycbydVzrgdg1nqP1YNKOp2-HvV7hk36lzuEa-xiO72Lmso91Sn_ATynb7VCjxb8p9X9BzAA/exec";
 
 async function sendLead(payload){
   if(!LEAD_WEBHOOK_URL) return;
   try{
     await fetch(LEAD_WEBHOOK_URL,{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
+      mode:'no-cors',
       body:JSON.stringify(payload)
     });
   }catch(err){
