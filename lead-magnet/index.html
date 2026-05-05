@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Diagnóstico de Lucro • Do Corte ao Lucro</title>
+  <style>
+    :root{--bg:#24120d;--panel:#341a12;--panel2:#412116;--text:#fff6f0;--muted:#edc8b4;--accent:#ff8b3d;--line:#6f3b26;--good:#1d7f46;--mid:#9a5b0f;--bad:#8f2727}
+    *{box-sizing:border-box}
+    body{margin:0;background:radial-gradient(circle at top,#3d1f16 0,#24120d 45%,#1a0d09 100%);color:var(--text);font-family:Georgia,'Times New Roman',serif}
+    .wrap{max-width:1040px;margin:28px auto;padding:16px}
+    .card{background:linear-gradient(180deg,var(--panel),var(--panel2));border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:14px;box-shadow:0 8px 24px rgba(0,0,0,.25)}
+    h1{margin:0 0 8px;font-size:clamp(26px,4vw,40px)}
+    .sub{font-family:system-ui;color:var(--muted);margin:0 0 14px;line-height:1.4}
+    label{display:block;font-family:system-ui;font-size:13px;color:#ffe7d8;margin:8px 0 4px}
+    input,select{width:100%;padding:11px;border-radius:10px;border:1px solid var(--line);background:#fff7f2;color:#3a1f15;font-family:system-ui}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    @media(max-width:820px){.row3,.row2{grid-template-columns:1fr}}
+    .btn{display:inline-block;border:none;border-radius:10px;padding:12px 14px;font-weight:800;font-family:system-ui;cursor:pointer;text-decoration:none}
+    .btn.main{background:var(--accent);color:#2d170f}.btn.ghost{background:transparent;color:var(--accent);border:1px solid var(--accent)}
+    .product{border:1px dashed var(--line);border-radius:12px;padding:12px;margin-top:10px;background:rgba(255,255,255,.02)}
+    .kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}@media(max-width:820px){.kpis{grid-template-columns:1fr}}
+    .tile{background:#fff4ee;color:#3a1d14;border-radius:12px;padding:12px;font-family:system-ui}
+    .tile span{font-size:12px;color:#804126}.tile b{display:block;font-size:24px;margin-top:4px;color:#532819}
+    .hero-profit{background:#fff1e8;border:2px solid var(--accent);border-radius:14px;padding:14px;color:#3a1d14;margin-bottom:10px}
+    .hero-profit strong{display:block;font-size:34px;color:#5a2a17}
+    .alert{padding:12px;border-radius:10px;font-family:system-ui;font-weight:700;margin-top:10px}
+    .bad{background:var(--bad)} .mid{background:var(--mid)} .good{background:var(--good)}
+    .hide{display:none}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>Diagnóstico de lucro por atendimento</h1>
+      <p class="sub">Preencha os dados e veja seu lucro real considerando produtos e custos operacionais do salão.</p>
+      <div class="row3">
+        <div><label>Tipo de serviço</label><select id="tipo"><option>Coloração padrão</option></select></div>
+        <div><label>Tempo de atendimento (minutos)</label><input id="tempo" type="number" value="120"></div>
+        <div><label>Preço cobrado (R$)</label><input id="preco" type="number" step="0.01" value="0"></div>
+      </div>
+      <p class="sub" style="margin-top:10px">Custos operacionais fixos: 35% custo fixo, 10% imposto e 4% taxa de pagamento.</p>
+      <div id="produtos"></div>
+      <button class="btn ghost" id="addProduto" type="button">+ Adicionar produto</button>
+    </div>
+
+    <div class="card" id="leadBox">
+      <p class="sub">Quer receber esse diagnóstico no WhatsApp?</p>
+      <div class="row2">
+        <div><label>Nome</label><input id="nome" type="text" placeholder="Seu nome"></div>
+        <div><label>WhatsApp</label><input id="whatsapp" type="tel" placeholder="(00) 00000-0000"></div>
+      </div>
+      <button class="btn main" id="verResultado" type="button" style="margin-top:10px">Ver meu resultado completo</button>
+    </div>
+
+    <div class="card hide" id="resultadoBox">
+      <div class="hero-profit">
+        <span>Lucro real por atendimento</span>
+        <strong id="lucroReal">R$ 0,00</strong>
+      </div>
+      <div class="kpis">
+        <div class="tile"><span>Preço cobrado</span><b id="rPreco">R$ 0,00</b></div>
+        <div class="tile"><span>Custo de produtos</span><b id="rProd">R$ 0,00</b></div>
+        <div class="tile"><span>Custo fixo (35%)</span><b id="rFixo">R$ 0,00</b></div>
+        <div class="tile"><span>Imposto (10%)</span><b id="rImp">R$ 0,00</b></div>
+        <div class="tile"><span>Taxa pagamento (4%)</span><b id="rTaxa">R$ 0,00</b></div>
+        <div class="tile"><span>Custo total</span><b id="rTotal">R$ 0,00</b></div>
+        <div class="tile"><span>Lucro líquido</span><b id="rLucro">R$ 0,00</b></div>
+        <div class="tile"><span>Margem</span><b id="rMargem">0%</b></div>
+        <div class="tile"><span>Lucro diário (5 atendimentos)</span><b id="rDiario">R$ 0,00</b></div>
+        <div class="tile"><span>Lucro mensal (22 dias)</span><b id="rMensal">R$ 0,00</b></div>
+      </div>
+      <div id="alerta" class="alert"></div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:12px">
+        <a class="btn main" id="btnWorkshop" href="https://docorteaolucro.com" target="_blank" rel="noopener">Quero aprender no Workshop</a>
+        <button class="btn ghost" id="btnWhats" type="button">Quero tirar dúvida no WhatsApp</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+const $=(id)=>document.getElementById(id);
+const money=(v)=>(Number(v)||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const track=(e)=>{ if(typeof fbq==='function') fbq('track',e); };
+
+function addProduto(v={}){
+  const el=document.createElement('div');
+  el.className='product';
+  el.innerHTML=`
+    <div class="row3">
+      <div><label>Nome do produto</label><input class="pNome" value="${v.nome||''}" type="text"></div>
+      <div><label>Custo total do produto (R$)</label><input class="pCusto" value="${v.custo||0}" type="number" step="0.01"></div>
+      <div><label>Quantidade total (g/ml)</label><input class="pTotal" value="${v.total||0}" type="number" step="0.01"></div>
+    </div>
+    <div class="row2">
+      <div><label>Quantidade usada no atendimento</label><input class="pUsada" value="${v.usada||0}" type="number" step="0.01"></div>
+      <div style="align-self:end"><button class="btn ghost pRemover" type="button">Remover produto</button></div>
+    </div>`;
+  el.querySelector('.pRemover').addEventListener('click',()=>{el.remove();calc();});
+  el.querySelectorAll('input').forEach(i=>i.addEventListener('input',calc));
+  $('produtos').appendChild(el);
+}
+
+function calc(){
+  const preco=Number($('preco').value)||0;
+  let custoProdutos=0;
+  document.querySelectorAll('.product').forEach(p=>{
+    const custo=Number(p.querySelector('.pCusto').value)||0;
+    const total=Number(p.querySelector('.pTotal').value)||0;
+    const usada=Number(p.querySelector('.pUsada').value)||0;
+    if(total>0) custoProdutos += (custo/total)*usada;
+  });
+
+  const custoFixo=preco*0.35;
+  const imposto=preco*0.10;
+  const taxa=preco*0.04;
+  const custoTotal=custoProdutos+custoFixo+imposto+taxa;
+  const lucro=preco-custoTotal;
+  const margem=preco>0?(lucro/preco)*100:0;
+  const lucroDiario=lucro*5;
+  const lucroMensal=lucroDiario*22;
+
+  $('lucroReal').textContent=money(lucro);
+  $('rPreco').textContent=money(preco);
+  $('rProd').textContent=money(custoProdutos);
+  $('rFixo').textContent=money(custoFixo);
+  $('rImp').textContent=money(imposto);
+  $('rTaxa').textContent=money(taxa);
+  $('rTotal').textContent=money(custoTotal);
+  $('rLucro').textContent=money(lucro);
+  $('rMargem').textContent=`${margem.toFixed(1).replace('.',',')}%`;
+  $('rDiario').textContent=money(lucroDiario);
+  $('rMensal').textContent=money(lucroMensal);
+
+  const a=$('alerta');
+  if(margem<20){a.className='alert bad';a.textContent='Margem baixa. Você pode estar trabalhando muito e lucrando pouco.'}
+  else if(margem<=40){a.className='alert mid';a.textContent='Margem média. Seu resultado pode melhorar com ajuste de preço e gestão.'}
+  else{a.className='alert good';a.textContent='Margem saudável. Agora o foco é escalar com consistência.'}
+}
+
+$('addProduto').addEventListener('click',()=>addProduto());
+$('preco').addEventListener('input',calc);
+$('tempo').addEventListener('input',calc);
+$('verResultado').addEventListener('click',()=>{
+  if(!$('nome').value.trim()||!$('whatsapp').value.trim()) return alert('Preencha nome e WhatsApp para ver o resultado completo.');
+  track('Lead');
+  $('resultadoBox').classList.remove('hide');
+  calc();
+  track('ViewContent');
+  $('resultadoBox').scrollIntoView({behavior:'smooth'});
+});
+$('btnWhats').addEventListener('click',()=>{
+  const txt='Oi, fiz a calculadora de lucro e quero entender como melhorar meu resultado no salão.';
+  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank');
+  track('Contact');
+});
+$('btnWorkshop').addEventListener('click',()=>track('InitiateCheckout'));
+
+addProduto({nome:'Coloração',custo:50,total:60,usada:30});
+calc();
+</script>
+</body>
+</html>
