@@ -28,7 +28,7 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
     <p class="sub">Entre com seu e-mail e senha.</p>
     <div class="field"><label>E-mail</label><input id="email" type="email" autocomplete="email"></div>
     <div class="field"><label>Senha</label><input id="password" type="password" autocomplete="current-password"></div>
-    <div class="row" style="margin-top:14px"><button id="loginBtn">Entrar</button><button id="signupBtn" class="alt">Criar acesso inicial</button></div>
+    <div class="row" style="margin-top:14px"><button id="loginBtn">Entrar</button></div>
     <div id="authMsg" class="message"></div>
   </section>
 
@@ -108,6 +108,26 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
         </div>
       </div>
       <section class="card">
+        <h3 style="margin-top:0;color:var(--brand)">Usuários e acessos</h3>
+        <p class="small">Crie o acesso do profissional e defina a unidade. Não é mais necessário entrar no Supabase para liberar usuários.</p>
+        <div class="admin-grid">
+          <div>
+            <div class="field"><label>Nome</label><input id="uName" placeholder="Nome do profissional"></div>
+            <div class="field"><label>E-mail</label><input id="uEmail" type="email" placeholder="profissional@email.com"></div>
+          </div>
+          <div>
+            <div class="field"><label>Senha temporária</label><input id="uPassword" type="text" placeholder="mínimo 6 caracteres"></div>
+            <div class="grid2">
+              <div class="field"><label>Unidade</label><select id="uUnit"><option value="SP">São Paulo</option><option value="RO">Porto Velho</option></select></div>
+              <div class="field"><label>Perfil</label><select id="uRole"><option value="colorist">Colorista</option><option value="admin">Administrador</option></select></div>
+            </div>
+          </div>
+        </div>
+        <button id="createUserBtn" style="margin-top:12px">Criar acesso</button>
+        <div id="userMsg" class="message"></div>
+        <div style="overflow:auto;margin-top:14px"><table class="table"><thead><tr><th>Profissional</th><th>E-mail</th><th>Unidade</th><th>Perfil</th><th>Status</th><th></th></tr></thead><tbody id="usersTable"></tbody></table></div>
+      </section>
+      <section class="card">
         <h3 style="margin-top:0;color:var(--brand)">Produtos cadastrados</h3>
         <div style="overflow:auto"><table class="table"><thead><tr><th>Produto</th><th>Emb.</th><th>SP</th><th>RO</th></tr></thead><tbody id="adminProducts"></tbody></table></div>
       </section>
@@ -124,7 +144,31 @@ const money=v=>(Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:
 const num=v=>{let s=String(v??"").trim().replace(/\s/g,"");if(s.includes(",")&&s.includes("."))s=s.replace(/\./g,"").replace(",",".");else s=s.replace(",",".");const n=Number(s.replace(/[^0-9.-]/g,""));return Number.isFinite(n)&&n>=0?n:0};
 function authMessage(t,kind=""){const e=$("authMsg");e.textContent=t;e.className="message "+kind}
 async function login(){authMessage("Entrando...");const {error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)return authMessage("Não foi possível entrar. Confira e-mail e senha.","err");await boot()}
-async function signup(){authMessage("Criando acesso...");const email=$("email").value.trim(),password=$("password").value;if(!email||password.length<6)return authMessage("Informe um e-mail válido e uma senha com pelo menos 6 caracteres.","err");const {error}=await supabase.auth.signUp({email,password});if(error)return authMessage(error.message,"err");authMessage("Acesso criado. Se receber um e-mail de confirmação, confirme antes de entrar. Depois a administração vincula sua unidade.","ok")}
+async function callAdminUsers(body){
+ const {data,error}=await supabase.functions.invoke("admin-users",{body});
+ if(error)throw error;
+ if(data?.error)throw new Error(data.error);
+ return data;
+}
+async function loadUsers(){
+ if(profile?.role!=="admin")return;
+ const tbody=$("usersTable");tbody.innerHTML='<tr><td colspan="6">Carregando...</td></tr>';
+ try{
+  const data=await callAdminUsers({action:"list"});const users=data.users||[];
+  tbody.innerHTML=users.map(u=>'<tr data-id="'+u.id+'"><td><input class="uu-name" value="'+escapeAttr(u.full_name||"")+'"></td><td>'+escapeHtml(u.email||"")+'</td><td><select class="uu-unit"><option value="SP" '+(u.unit_code==="SP"?"selected":"")+'>SP</option><option value="RO" '+(u.unit_code==="RO"?"selected":"")+'>RO</option></select></td><td><select class="uu-role"><option value="colorist" '+(u.role==="colorist"?"selected":"")+'>Colorista</option><option value="admin" '+(u.role==="admin"?"selected":"")+'>Administrador</option></select></td><td><select class="uu-active"><option value="true" '+(u.active?"selected":"")+'>Ativo</option><option value="false" '+(!u.active?"selected":"")+'>Inativo</option></select></td><td><button class="soft uu-save">Salvar</button></td></tr>').join("")||'<tr><td colspan="6">Nenhum usuário.</td></tr>';
+  tbody.querySelectorAll(".uu-save").forEach(btn=>btn.addEventListener("click",async()=>{const tr=btn.closest("tr");btn.disabled=true;btn.textContent="Salvando...";try{await callAdminUsers({action:"update",id:tr.dataset.id,full_name:tr.querySelector(".uu-name").value,unit_code:tr.querySelector(".uu-unit").value,role:tr.querySelector(".uu-role").value,active:tr.querySelector(".uu-active").value==="true"});btn.textContent="Salvo";setTimeout(()=>btn.textContent="Salvar",1200)}catch(e){alert(e.message);btn.textContent="Salvar"}finally{btn.disabled=false}}));
+ }catch(e){tbody.innerHTML='<tr><td colspan="6">Erro ao carregar usuários.</td></tr>'}
+}
+async function createUser(){
+ const msg=$("userMsg");msg.textContent="Criando acesso...";msg.className="message";
+ try{
+  await callAdminUsers({action:"create",full_name:$("uName").value.trim(),email:$("uEmail").value.trim(),password:$("uPassword").value,unit_code:$("uUnit").value,role:$("uRole").value});
+  msg.textContent="Acesso criado. Agora envie o e-mail e a senha temporária ao profissional.";msg.className="message ok";
+  $("uName").value="";$("uEmail").value="";$("uPassword").value="";await loadUsers();
+ }catch(e){msg.textContent=e.message||"Não foi possível criar o acesso.";msg.className="message err"}
+}
+function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[c]))}
+function escapeAttr(s){return escapeHtml(s)}
 async function logout(){await supabase.auth.signOut();location.reload()}
 async function boot(){
  const {data:{session}}=await supabase.auth.getSession();
@@ -132,7 +176,7 @@ async function boot(){
  const {data:p,error}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
  if(error){authMessage("Não consegui carregar seu perfil.","err");return}
  profile=p;$("loginView").classList.add("hidden");$("appView").classList.remove("hidden");$("userName").textContent=p.full_name||session.user.email;$("userRole").textContent=p.role==="admin"?"Administrador":"Colorista";
- if(p.role==="admin"){$("tabs").classList.remove("hidden");$("adminUnitWrap").classList.remove("hidden");$("adminUnit").value=p.unit_code||"SP";showTab("calc");await loadUnit($("adminUnit").value)}
+ if(p.role==="admin"){$("tabs").classList.remove("hidden");$("adminUnitWrap").classList.remove("hidden");$("adminUnit").value=p.unit_code||"SP";showTab("calc");await loadUnit($("adminUnit").value);await loadUsers()}
  else if(!p.unit_code){$("pendingView").classList.remove("hidden");$("calcTab").classList.add("hidden")}
  else{$("unitLabel").textContent=p.unit_code==="SP"?"Ruê São Paulo":"Ruê Porto Velho";await loadUnit(p.unit_code);$("calcTab").classList.remove("hidden")}
 }
@@ -158,7 +202,7 @@ function renderBreak(prices,total){
  const price=prices[selectedKind]||0,comm=price*Number(settings.commission_rate),taxfee=price*(Number(settings.tax_rate)+Number(settings.financial_fee_rate)),structure=price*Number(settings.structure_rate),salon=price-comm-total-taxfee-structure;
  $("breakTitle").textContent="Composição do Preço "+({great:"Ótimo",ideal:"Ideal",limit:"Limite"}[selectedKind]);$("bComm").textContent=money(comm);$("bProd").textContent=money(total);$("bTaxFee").textContent=money(taxfee);$("bStruct").textContent=money(structure);$("bSalon").textContent=money(salon)
 }
-function showTab(tab){$("calcTab").classList.toggle("hidden",tab!=="calc");$("adminTab").classList.toggle("hidden",tab!=="admin");document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab))}
+function showTab(tab){$("calcTab").classList.toggle("hidden",tab!=="calc");$("adminTab").classList.toggle("hidden",tab!=="admin");document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));if(tab==="admin")loadUsers()}
 function pct(v){return (Number(v||0)*100).toFixed(2).replace(".",",")}
 function fillSettings(){if(!settings)return;$("sComm").value=pct(settings.commission_rate);$("sTax").value=pct(settings.tax_rate);$("sFee").value=pct(settings.financial_fee_rate);$("sStruct").value=pct(settings.structure_rate);$("sTechnical").value=Number(settings.technical_supplies_cost).toFixed(2).replace(".",",");$("sRound").value=Number(settings.round_step).toFixed(2).replace(".",",")}
 async function saveSettings(){
@@ -175,7 +219,7 @@ async function renderAdmin(){
  if(profile?.role!=="admin")return;
  const {data:allCosts}=await supabase.from("product_costs").select("*");const tbody=$("adminProducts");tbody.innerHTML=products.map(p=>{const sp=allCosts?.find(c=>c.product_id===p.id&&c.unit_code==="SP")?.package_cost??0,ro=allCosts?.find(c=>c.product_id===p.id&&c.unit_code==="RO")?.package_cost??0;return '<tr><td>'+p.name+'</td><td>'+p.package_qty+' '+p.unit+'</td><td>'+money(sp)+'</td><td>'+money(ro)+'</td></tr>'}).join("")
 }
-$("loginBtn").addEventListener("click",login);$("signupBtn").addEventListener("click",signup);$("logoutBtn").addEventListener("click",logout);$("addLine").addEventListener("click",addLine);$("newCalc").addEventListener("click",()=>{renderLines(true);calculate()});$("saveProduct").addEventListener("click",saveProduct);$("saveSettings").addEventListener("click",saveSettings);$("adminUnit").addEventListener("change",()=>loadUnit($("adminUnit").value));document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));document.querySelectorAll(".pricebtn").forEach(b=>b.addEventListener("click",()=>{selectedKind=b.dataset.kind;document.querySelectorAll(".pricebtn").forEach(x=>x.classList.toggle("active",x===b));calculate()}));
+$("loginBtn").addEventListener("click",login);$("logoutBtn").addEventListener("click",logout);$("createUserBtn").addEventListener("click",createUser);$("addLine").addEventListener("click",addLine);$("newCalc").addEventListener("click",()=>{renderLines(true);calculate()});$("saveProduct").addEventListener("click",saveProduct);$("saveSettings").addEventListener("click",saveSettings);$("adminUnit").addEventListener("change",()=>loadUnit($("adminUnit").value));document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));document.querySelectorAll(".pricebtn").forEach(b=>b.addEventListener("click",()=>{selectedKind=b.dataset.kind;document.querySelectorAll(".pricebtn").forEach(x=>x.classList.toggle("active",x===b));calculate()}));
 boot();
 </script>
 </body>
