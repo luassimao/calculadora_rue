@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Ruê Precificação v4</title>
+<meta name="theme-color" content="#8a3d2b">
+<link rel="icon" href="./favicon-32.png" sizes="32x32">
+<style>
+:root{--bg:#fffaf8;--panel:#fff;--text:#2b1b16;--muted:#795448;--brand:#8a3d2b;--brand2:#6f3023;--accent:#f1d5c9;--border:#eaded9;--soft:#fbf4f1;--ok:#456b50;--danger:#9a2e2e}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--text)}
+body{padding:18px 10px 36px}.wrap{max-width:1120px;margin:auto}.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px}
+.brand{display:flex;gap:12px;align-items:center}.brand img{width:52px;height:52px;object-fit:contain;border:1px solid var(--border);border-radius:12px;padding:5px;background:#fff}.brand h1{font-size:25px;margin:0;color:var(--brand)}.small{font-size:12px;color:var(--muted)}.sub{margin:4px 0 0;color:var(--muted);font-size:14px}
+.hidden{display:none!important}.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}.layout{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(300px,.7fr);gap:14px}
+label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:5px}input,select{width:100%;min-height:44px;border:1px solid var(--border);border-radius:10px;padding:10px 11px;background:#fff;color:var(--text);font-size:16px}button{min-height:44px;border:0;border-radius:11px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:800;cursor:pointer}button.alt{background:#fff;color:var(--brand);border:1px solid var(--brand)}button.soft{background:var(--soft);color:var(--brand);border:1px solid var(--border)}button.danger{background:#fff;color:var(--danger);border:1px solid #e9caca}
+.login{max-width:430px;margin:55px auto}.login h2{margin:0 0 4px;color:var(--brand)}.field{margin-top:12px}.message{margin-top:12px;font-size:13px;color:var(--muted)}.message.err{color:var(--danger)}.message.ok{color:var(--ok)}
+.topbar{display:flex;justify-content:space-between;gap:12px;align-items:center}.userbox{text-align:right}.userbox strong{display:block}.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.tabs button.active{background:var(--brand)}.tabs button:not(.active){background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.product-line{display:grid;grid-template-columns:1.6fr .75fr .85fr auto;gap:8px;align-items:end;border:1px solid var(--border);border-radius:14px;padding:12px;margin-bottom:9px}.item-cost{font-size:12px;color:var(--muted);margin-top:5px}.results{display:grid;gap:9px}.result{border:1px solid var(--border);border-radius:14px;padding:14px;background:#fff}.result.main{background:var(--soft)}.rl{font-size:11px;text-transform:uppercase;color:var(--muted);font-weight:800}.rv{font-size:27px;font-weight:900;color:var(--brand);margin-top:3px}.pricebtn{width:100%;text-align:left;background:#fff;color:var(--text);border:1px solid var(--border);padding:13px}.pricebtn.active{border:2px solid var(--brand);background:var(--soft)}.pricebtn strong{display:block;font-size:24px;color:var(--brand)}
+.break{margin-top:10px;border:1px solid var(--border);border-radius:14px;padding:13px}.breakrow{display:flex;justify-content:space-between;gap:10px;padding:7px 0;border-bottom:1px solid #f1e7e2;font-size:13px}.breakrow:last-child{border:0}.breakrow span:last-child{font-weight:800}.note{font-size:11px;color:var(--muted);line-height:1.4;margin-top:6px}
+.admin-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.table{width:100%;border-collapse:collapse;font-size:13px}.table th,.table td{padding:8px;border-bottom:1px solid var(--border);text-align:left}.table input,.table select{min-height:38px;font-size:14px;padding:7px}
+@media(max-width:850px){.layout,.admin-grid{grid-template-columns:1fr}.product-line{grid-template-columns:1fr 1fr}.product-line .name{grid-column:1/-1}}@media(max-width:440px){.grid2,.product-line{grid-template-columns:1fr}.product-line .name{grid-column:auto}.topbar{align-items:flex-start;flex-direction:column}.userbox{text-align:left}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section id="loginView" class="card login">
+    <div class="brand"><img src="./SIMBOLO-01.jpg" alt="Ruê"><div><h2>Ruê Precificação</h2><div class="small">v4 • acesso por unidade</div></div></div>
+    <p class="sub">Entre com seu e-mail e senha.</p>
+    <div class="field"><label>E-mail</label><input id="email" type="email" autocomplete="email"></div>
+    <div class="field"><label>Senha</label><input id="password" type="password" autocomplete="current-password"></div>
+    <div class="row" style="margin-top:14px"><button id="loginBtn">Entrar</button><button id="signupBtn" class="alt">Criar acesso inicial</button></div>
+    <div id="authMsg" class="message"></div>
+  </section>
+
+  <div id="appView" class="hidden">
+    <section class="card">
+      <div class="topbar">
+        <div class="brand"><img src="./SIMBOLO-01.jpg" alt="Ruê"><div><h1>Ruê Precificação</h1><p class="sub" id="unitLabel">Carregando unidade...</p></div></div>
+        <div class="userbox"><strong id="userName"></strong><span class="small" id="userRole"></span><br><button id="logoutBtn" class="soft" style="margin-top:6px">Sair</button></div>
+      </div>
+      <div id="adminUnitWrap" class="row hidden" style="margin-top:12px"><label style="margin:0">Visualizar unidade:</label><select id="adminUnit" style="max-width:240px"><option value="SP">São Paulo</option><option value="RO">Porto Velho</option></select></div>
+      <div id="tabs" class="tabs hidden"><button data-tab="calc" class="active">Calculadora</button><button data-tab="admin">Administração</button></div>
+    </section>
+
+    <section id="pendingView" class="card hidden">
+      <h3 style="margin-top:0;color:var(--brand)">Acesso aguardando liberação</h3>
+      <p>Seu usuário foi criado, mas ainda não está vinculado a uma unidade. Após a administração liberar SP ou RO, a calculadora ficará disponível.</p>
+    </section>
+
+    <div id="calcTab" class="layout hidden">
+      <section class="card">
+        <h3 style="margin-top:0;color:var(--brand)">Produtos utilizados</h3>
+        <p class="small">Escolha o tipo de produto e informe somente quanto foi usado.</p>
+        <div id="calcLines"></div>
+        <div class="row"><button id="addLine" class="alt">+ Adicionar produto</button><button id="newCalc" class="soft">Novo cálculo</button></div>
+      </section>
+      <aside class="card">
+        <div class="results">
+          <div class="result main"><div class="rl">Produtos e insumos do atendimento</div><div id="variableCost" class="rv">R$ 0,00</div><div class="note">Inclui o consumo informado e insumos técnicos do protocolo.</div></div>
+          <button class="pricebtn" data-kind="great"><span class="small">Preço Ótimo</span><strong id="pGreat">R$ 0,00</strong></button>
+          <button class="pricebtn active" data-kind="ideal"><span class="small">Preço Ideal</span><strong id="pIdeal">R$ 0,00</strong></button>
+          <button class="pricebtn" data-kind="limit"><span class="small">Preço Limite</span><strong id="pLimit">R$ 0,00</strong></button>
+          <div class="break">
+            <strong id="breakTitle" style="color:var(--brand)">Composição do Preço Ideal</strong>
+            <div class="breakrow"><span>Remuneração do profissional (35%)</span><span id="bComm">R$ 0,00</span></div>
+            <div class="breakrow"><span>Produtos e insumos</span><span id="bProd">R$ 0,00</span></div>
+            <div class="breakrow"><span>Impostos e taxas</span><span id="bTaxFee">R$ 0,00</span></div>
+            <div class="breakrow"><span>Estrutura e operação</span><span id="bStruct">R$ 0,00</span></div>
+            <div class="note">Estrutura física, equipe de apoio, energia, água, manutenção, limpeza, sistemas, marketing e demais despesas operacionais.</div>
+            <div class="breakrow"><span>Resultado estimado da operação</span><span id="bSalon">R$ 0,00</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section id="adminTab" class="hidden">
+      <div class="admin-grid">
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--brand)">Novo produto</h3>
+          <div class="field"><label>Nome</label><input id="aName" placeholder="Ex.: Keune Tinta Color"></div>
+          <div class="grid2">
+            <div class="field"><label>Categoria</label><select id="aCat"><option value="coloracao">Coloração</option><option value="oxidante">Oxidante / Emulsão</option><option value="descolorante">Descolorante</option><option value="outro">Outro</option></select></div>
+            <div class="field"><label>Unidade</label><select id="aUnit"><option value="g">g</option><option value="ml">ml</option><option value="un">un</option></select></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Quantidade embalagem</label><input id="aPack" inputmode="decimal" placeholder="60"></div>
+            <div></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>Custo SP</label><input id="aCostSP" inputmode="decimal" placeholder="0,00"></div>
+            <div class="field"><label>Custo RO</label><input id="aCostRO" inputmode="decimal" placeholder="0,00"></div>
+          </div>
+          <button id="saveProduct" style="margin-top:12px">Salvar produto</button>
+          <div id="adminMsg" class="message"></div>
+        </div>
+        <div class="card">
+          <h3 style="margin-top:0;color:var(--brand)">Parâmetros da unidade</h3>
+          <div class="small">Edite os parâmetros da unidade selecionada acima.</div>
+          <div class="grid2">
+            <div class="field"><label>Comissão %</label><input id="sComm" inputmode="decimal"></div>
+            <div class="field"><label>Impostos %</label><input id="sTax" inputmode="decimal"></div>
+            <div class="field"><label>Taxas financeiras %</label><input id="sFee" inputmode="decimal"></div>
+            <div class="field"><label>Estrutura %</label><input id="sStruct" inputmode="decimal"></div>
+            <div class="field"><label>Insumos técnicos R$</label><input id="sTechnical" inputmode="decimal"></div>
+            <div class="field"><label>Arredondamento R$</label><input id="sRound" inputmode="decimal"></div>
+          </div>
+          <button id="saveSettings" style="margin-top:12px">Salvar parâmetros</button>
+        </div>
+      </div>
+      <section class="card">
+        <h3 style="margin-top:0;color:var(--brand)">Produtos cadastrados</h3>
+        <div style="overflow:auto"><table class="table"><thead><tr><th>Produto</th><th>Emb.</th><th>SP</th><th>RO</th></tr></thead><tbody id="adminProducts"></tbody></table></div>
+      </section>
+    </section>
+  </div>
+</div>
+
+<script type="module">
+import { createClient } from "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm";
+const supabase=createClient("https://qinvwoomnzybmmezfnma.supabase.co","sb_publishable_7KojiN5fOEyzzz67Bm92jQ_8AlJNcif");
+const $=id=>document.getElementById(id);
+let profile=null,products=[],costs=[],settings=null,selectedKind="ideal";
+const money=v=>(Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+const num=v=>{let s=String(v??"").trim().replace(/\s/g,"");if(s.includes(",")&&s.includes("."))s=s.replace(/\./g,"").replace(",",".");else s=s.replace(",",".");const n=Number(s.replace(/[^0-9.-]/g,""));return Number.isFinite(n)&&n>=0?n:0};
+function authMessage(t,kind=""){const e=$("authMsg");e.textContent=t;e.className="message "+kind}
+async function login(){authMessage("Entrando...");const {error}=await supabase.auth.signInWithPassword({email:$("email").value.trim(),password:$("password").value});if(error)return authMessage("Não foi possível entrar. Confira e-mail e senha.","err");await boot()}
+async function signup(){authMessage("Criando acesso...");const email=$("email").value.trim(),password=$("password").value;if(!email||password.length<6)return authMessage("Informe um e-mail válido e uma senha com pelo menos 6 caracteres.","err");const {error}=await supabase.auth.signUp({email,password});if(error)return authMessage(error.message,"err");authMessage("Acesso criado. Se receber um e-mail de confirmação, confirme antes de entrar. Depois a administração vincula sua unidade.","ok")}
+async function logout(){await supabase.auth.signOut();location.reload()}
+async function boot(){
+ const {data:{session}}=await supabase.auth.getSession();
+ if(!session){$("loginView").classList.remove("hidden");$("appView").classList.add("hidden");return}
+ const {data:p,error}=await supabase.from("profiles").select("*").eq("id",session.user.id).single();
+ if(error){authMessage("Não consegui carregar seu perfil.","err");return}
+ profile=p;$("loginView").classList.add("hidden");$("appView").classList.remove("hidden");$("userName").textContent=p.full_name||session.user.email;$("userRole").textContent=p.role==="admin"?"Administrador":"Colorista";
+ if(p.role==="admin"){$("tabs").classList.remove("hidden");$("adminUnitWrap").classList.remove("hidden");$("adminUnit").value=p.unit_code||"SP";showTab("calc");await loadUnit($("adminUnit").value)}
+ else if(!p.unit_code){$("pendingView").classList.remove("hidden");$("calcTab").classList.add("hidden")}
+ else{$("unitLabel").textContent=p.unit_code==="SP"?"Ruê São Paulo":"Ruê Porto Velho";await loadUnit(p.unit_code);$("calcTab").classList.remove("hidden")}
+}
+async function loadUnit(code){
+ $("unitLabel").textContent=code==="SP"?"Ruê São Paulo":"Ruê Porto Velho";
+ const [pr,co,se]=await Promise.all([supabase.from("products").select("*").eq("active",true).order("sort_order").order("name"),supabase.from("product_costs").select("*").eq("unit_code",code),supabase.from("unit_settings").select("*").eq("unit_code",code).single()]);
+ products=pr.data||[];costs=co.data||[];settings=se.data||null;renderLines(true);renderAdmin();fillSettings();calculate();
+}
+function productCost(id){return Number(costs.find(c=>String(c.product_id)===String(id))?.package_cost||0)}
+function addLine(){
+ const el=document.createElement("div");el.className="product-line";el.innerHTML='<div class="name"><label>Produto</label><select class="lp"><option value="">Selecione...</option>'+products.map(p=>'<option value="'+p.id+'">'+p.name+'</option>').join("")+'</select></div><div><label>Qtd. usada</label><input class="lq" inputmode="decimal" value="0"></div><div><label>Unidade</label><input class="lu" value="-" disabled></div><button class="danger rm">Remover</button><div class="item-cost" style="grid-column:1/-1">Custo estimado: <strong>R$ 0,00</strong></div>';
+ $("calcLines").appendChild(el);el.querySelector(".lp").addEventListener("change",()=>{const p=products.find(x=>String(x.id)===el.querySelector(".lp").value);el.querySelector(".lu").value=p?p.unit:"-";calculate()});el.querySelector(".lq").addEventListener("input",calculate);el.querySelector(".rm").addEventListener("click",()=>{el.remove();calculate()});
+}
+function renderLines(reset=false){if(reset)$("calcLines").innerHTML="";if(!$("calcLines").children.length)addLine()}
+function calculate(){
+ if(!settings)return;let productTotal=0;
+ [...$("calcLines").children].forEach(el=>{const p=products.find(x=>String(x.id)===el.querySelector(".lp").value);const q=num(el.querySelector(".lq").value);let c=0;if(p)c=(productCost(p.id)/Number(p.package_qty))*q;productTotal+=c;el.querySelector(".item-cost strong").textContent=money(c)});
+ const total=productTotal+Number(settings.technical_supplies_cost||0);const step=Number(settings.round_step||5);const round=v=>Math.round(v/step)*step;
+ const prices={great:round(total/Number(settings.target_great)),ideal:round(total/Number(settings.target_ideal)),limit:round(total/Number(settings.target_limit))};
+ $("variableCost").textContent=money(total);$("pGreat").textContent=money(prices.great);$("pIdeal").textContent=money(prices.ideal);$("pLimit").textContent=money(prices.limit);renderBreak(prices,total)
+}
+function renderBreak(prices,total){
+ const price=prices[selectedKind]||0,comm=price*Number(settings.commission_rate),taxfee=price*(Number(settings.tax_rate)+Number(settings.financial_fee_rate)),structure=price*Number(settings.structure_rate),salon=price-comm-total-taxfee-structure;
+ $("breakTitle").textContent="Composição do Preço "+({great:"Ótimo",ideal:"Ideal",limit:"Limite"}[selectedKind]);$("bComm").textContent=money(comm);$("bProd").textContent=money(total);$("bTaxFee").textContent=money(taxfee);$("bStruct").textContent=money(structure);$("bSalon").textContent=money(salon)
+}
+function showTab(tab){$("calcTab").classList.toggle("hidden",tab!=="calc");$("adminTab").classList.toggle("hidden",tab!=="admin");document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab))}
+function pct(v){return (Number(v||0)*100).toFixed(2).replace(".",",")}
+function fillSettings(){if(!settings)return;$("sComm").value=pct(settings.commission_rate);$("sTax").value=pct(settings.tax_rate);$("sFee").value=pct(settings.financial_fee_rate);$("sStruct").value=pct(settings.structure_rate);$("sTechnical").value=Number(settings.technical_supplies_cost).toFixed(2).replace(".",",");$("sRound").value=Number(settings.round_step).toFixed(2).replace(".",",")}
+async function saveSettings(){
+ const code=$("adminUnit").value;const payload={commission_rate:num($("sComm").value)/100,tax_rate:num($("sTax").value)/100,financial_fee_rate:num($("sFee").value)/100,structure_rate:num($("sStruct").value)/100,technical_supplies_cost:num($("sTechnical").value),round_step:num($("sRound").value),updated_at:new Date().toISOString()};
+ const {error}=await supabase.from("unit_settings").update(payload).eq("unit_code",code);if(error)return alert(error.message);await loadUnit(code);alert("Parâmetros salvos.")
+}
+async function saveProduct(){
+ const name=$("aName").value.trim(),pack=num($("aPack").value),unit=$("aUnit").value;if(!name||!pack)return $("adminMsg").textContent="Informe nome e quantidade da embalagem.";
+ const {data:p,error}=await supabase.from("products").insert({name,category:$("aCat").value,package_qty:pack,unit}).select().single();if(error)return $("adminMsg").textContent=error.message;
+ const {error:e2}=await supabase.from("product_costs").insert([{product_id:p.id,unit_code:"SP",package_cost:num($("aCostSP").value)},{product_id:p.id,unit_code:"RO",package_cost:num($("aCostRO").value)}]);if(e2)return $("adminMsg").textContent=e2.message;
+ $("aName").value="";$("aPack").value="";$("aCostSP").value="";$("aCostRO").value="";$("adminMsg").textContent="Produto salvo.";await loadUnit($("adminUnit").value)
+}
+async function renderAdmin(){
+ if(profile?.role!=="admin")return;
+ const {data:allCosts}=await supabase.from("product_costs").select("*");const tbody=$("adminProducts");tbody.innerHTML=products.map(p=>{const sp=allCosts?.find(c=>c.product_id===p.id&&c.unit_code==="SP")?.package_cost??0,ro=allCosts?.find(c=>c.product_id===p.id&&c.unit_code==="RO")?.package_cost??0;return '<tr><td>'+p.name+'</td><td>'+p.package_qty+' '+p.unit+'</td><td>'+money(sp)+'</td><td>'+money(ro)+'</td></tr>'}).join("")
+}
+$("loginBtn").addEventListener("click",login);$("signupBtn").addEventListener("click",signup);$("logoutBtn").addEventListener("click",logout);$("addLine").addEventListener("click",addLine);$("newCalc").addEventListener("click",()=>{renderLines(true);calculate()});$("saveProduct").addEventListener("click",saveProduct);$("saveSettings").addEventListener("click",saveSettings);$("adminUnit").addEventListener("change",()=>loadUnit($("adminUnit").value));document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));document.querySelectorAll(".pricebtn").forEach(b=>b.addEventListener("click",()=>{selectedKind=b.dataset.kind;document.querySelectorAll(".pricebtn").forEach(x=>x.classList.toggle("active",x===b));calculate()}));
+boot();
+</script>
+</body>
+</html>
