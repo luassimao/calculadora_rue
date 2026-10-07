@@ -83,7 +83,7 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
             <div class="field"><label>Nome do produto</label><input id="aName" placeholder="Ex.: Tinta Color"></div>
           </div>
           <div class="grid2">
-            <div class="field"><label>Categoria</label><select id="aCat"><option value="coloracao">Coloração</option><option value="tonalizante">Tonalizante</option><option value="oxidante">Oxidante</option><option value="emulsao">Emulsão / Revelador</option><option value="descolorante">Descolorante</option><option value="outro">Outro</option></select></div>
+            <div class="field"><label>Categoria</label><select id="aCat"><option value="coloracao">Coloração</option><option value="superclareador">Superclareador / Clareador</option><option value="tonalizante">Tonalizante</option><option value="oxidante">Oxidante</option><option value="emulsao">Emulsão / Revelador</option><option value="descolorante">Descolorante</option><option value="outro">Outro</option></select></div>
             <div class="field"><label>Unidade</label><select id="aUnit"><option value="g">g</option><option value="ml">ml</option><option value="un">un</option></select></div>
           </div>
           <div class="grid2">
@@ -147,7 +147,7 @@ const $=id=>document.getElementById(id);
 let profile=null,products=[],costs=[],settings=null,selectedKind="ideal";
 const money=v=>(Number(v)||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 const num=v=>{let s=String(v??"").trim().replace(/\s/g,"");if(s.includes(",")&&s.includes("."))s=s.replace(/\./g,"").replace(",",".");else s=s.replace(",",".");const n=Number(s.replace(/[^0-9.-]/g,""));return Number.isFinite(n)&&n>=0?n:0};
-const categoryLabels={coloracao:"Coloração permanente",coloracao_rapida:"Coloração rápida",tonalizante:"Tonalizante / Semi",oxidante:"Oxidante",emulsao:"Emulsão / Revelador",descolorante:"Descolorante",outro:"Outro"};
+const categoryLabels={coloracao:"Coloração permanente",coloracao_rapida:"Coloração rápida",superclareador:"Superclareador / Clareador",tonalizante:"Tonalizante / Semi",oxidante:"Oxidante",emulsao:"Emulsão / Revelador",descolorante:"Descolorante",outro:"Outro"};
 function categoryLabel(v){return categoryLabels[v]||v||"Outro"}
 function productOptions(category){
  const filtered=products.filter(p=>(!category||p.category===category) && productCost(p.id)>0);
