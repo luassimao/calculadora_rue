@@ -107,16 +107,16 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
               <option value="SP">Ruê São Paulo</option>
             </select>
           </div>
-          <div class="small">Cada salão possui parâmetros próprios. Alterar Porto Velho não altera São Paulo, e vice-versa. A estrutura é uma meta de precificação definida pela empresa.</div>
+          <div class="small">Cada salão possui parâmetros próprios. Alterar Porto Velho não altera São Paulo, e vice-versa. A estrutura e as margens-alvo entram diretamente no cálculo dos preços sugeridos.</div>
           <div class="grid2">
             <div class="field"><label>Comissão %</label><input id="sComm" inputmode="decimal"></div>
             <div class="field"><label>Impostos % <span class="small">(sobre a cota do salão)</span></label><input id="sTax" inputmode="decimal"></div>
             <div class="field"><label>Taxas financeiras %</label><input id="sFee" inputmode="decimal"></div>
             <div class="field"><label>Estrutura-alvo %</label><input id="sStruct" inputmode="decimal"></div>
             <div class="field"><label>Insumos técnicos R$</label><input id="sTechnical" inputmode="decimal"></div>
-            <div class="field"><label>Premium — produtos %</label><input id="sGreat" inputmode="decimal"></div>
-            <div class="field"><label>Recomendado — produtos %</label><input id="sIdeal" inputmode="decimal"></div>
-            <div class="field"><label>Estratégico — produtos %</label><input id="sLimit" inputmode="decimal"></div>
+            <div class="field"><label>Premium — margem alvo %</label><input id="sGreat" inputmode="decimal"></div>
+            <div class="field"><label>Recomendado — margem alvo %</label><input id="sIdeal" inputmode="decimal"></div>
+            <div class="field"><label>Estratégico — margem alvo %</label><input id="sLimit" inputmode="decimal"></div>
             <div class="field"><label>Arredondamento R$</label><input id="sRound" inputmode="decimal"></div>
           </div>
           <button id="saveSettings" style="margin-top:12px">Salvar parâmetros</button>
@@ -225,8 +225,18 @@ function renderLines(reset=false){if(reset)$("calcLines").innerHTML="";if(!$("ca
 function calculate(){
  if(!settings)return;let productTotal=0;
  [...$("calcLines").children].forEach(el=>{const p=products.find(x=>String(x.id)===el.querySelector(".lp").value);const q=num(el.querySelector(".lq").value);let c=0;if(p)c=(productCost(p.id)/Number(p.package_qty))*q;productTotal+=c;el.querySelector(".item-cost strong").textContent=money(c)});
- const total=productTotal+Number(settings.technical_supplies_cost||0);const step=Number(settings.round_step||5);const round=v=>Math.round(v/step)*step;
- const prices={great:round(total/Number(settings.target_great)),ideal:round(total/Number(settings.target_ideal)),limit:round(total/Number(settings.target_limit))};
+ const total=productTotal+Number(settings.technical_supplies_cost||0);
+ const step=Number(settings.round_step||5);
+ const round=v=>Math.round(v/step)*step;
+ const commRate=Number(settings.commission_rate||0);
+ const feeRate=Number(settings.financial_fee_rate||0);
+ const taxEffective=Number(settings.tax_rate||0)*(1-commRate);
+ const structureRate=Number(settings.structure_rate||0);
+ const priceForMargin=margin=>{
+   const available=1-commRate-feeRate-taxEffective-structureRate-Number(margin||0);
+   return available>0?round(total/available):0;
+ };
+ const prices={great:priceForMargin(settings.target_great),ideal:priceForMargin(settings.target_ideal),limit:priceForMargin(settings.target_limit)};
  $("variableCost").textContent=money(total);$("pGreat").textContent=money(prices.great);$("pIdeal").textContent=money(prices.ideal);$("pLimit").textContent=money(prices.limit);renderBreak(prices,total)
 }
 function renderBreak(prices,total){
