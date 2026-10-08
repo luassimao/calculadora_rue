@@ -57,9 +57,9 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
       <aside class="card">
         <div class="results">
           <div class="result main"><div class="rl">Produtos e insumos do atendimento</div><div id="variableCost" class="rv">R$ 0,00</div><div class="note">Inclui o consumo informado e insumos técnicos do protocolo.</div></div>
-          <button class="pricebtn" data-kind="great"><span class="small">Preço Premium <span id="rGreat"></span></span><strong id="pGreat">R$ 0,00</strong></button>
-          <button class="pricebtn active" data-kind="ideal"><span class="small">Preço Recomendado <span id="rIdeal"></span></span><strong id="pIdeal">R$ 0,00</strong></button>
-          <button class="pricebtn" data-kind="limit"><span class="small">Preço Estratégico <span id="rLimit"></span></span><strong id="pLimit">R$ 0,00</strong></button>
+          <button class="pricebtn" data-kind="great"><span class="small">Preço Premium</span><strong id="pGreat">R$ 0,00</strong></button>
+          <button class="pricebtn active" data-kind="ideal"><span class="small">Preço Recomendado</span><strong id="pIdeal">R$ 0,00</strong></button>
+          <button class="pricebtn" data-kind="limit"><span class="small">Preço Estratégico</span><strong id="pLimit">R$ 0,00</strong></button>
           <div class="note">O preço recomendado é a referência padrão da Ruê. O estratégico prioriza competitividade e o premium amplia a proteção de margem.</div>
           <div class="break">
             <strong id="breakTitle" style="color:var(--brand)">Composição do Preço Recomendado</strong>
@@ -227,8 +227,7 @@ function calculate(){
  [...$("calcLines").children].forEach(el=>{const p=products.find(x=>String(x.id)===el.querySelector(".lp").value);const q=num(el.querySelector(".lq").value);let c=0;if(p)c=(productCost(p.id)/Number(p.package_qty))*q;productTotal+=c;el.querySelector(".item-cost strong").textContent=money(c)});
  const total=productTotal+Number(settings.technical_supplies_cost||0);const step=Number(settings.round_step||5);const round=v=>Math.round(v/step)*step;
  const prices={great:round(total/Number(settings.target_great)),ideal:round(total/Number(settings.target_ideal)),limit:round(total/Number(settings.target_limit))};
- $("variableCost").textContent=money(total);$("pGreat").textContent=money(prices.great);$("pIdeal").textContent=money(prices.ideal);$("pLimit").textContent=money(prices.limit);
- $("rGreat").textContent="("+pct(settings.target_great)+")";$("rIdeal").textContent="("+pct(settings.target_ideal)+")";$("rLimit").textContent="("+pct(settings.target_limit)+")";renderBreak(prices,total)
+ $("variableCost").textContent=money(total);$("pGreat").textContent=money(prices.great);$("pIdeal").textContent=money(prices.ideal);$("pLimit").textContent=money(prices.limit);renderBreak(prices,total)
 }
 function renderBreak(prices,total){
  const price=prices[selectedKind]||0;
