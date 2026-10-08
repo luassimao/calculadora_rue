@@ -57,11 +57,12 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
       <aside class="card">
         <div class="results">
           <div class="result main"><div class="rl">Produtos e insumos do atendimento</div><div id="variableCost" class="rv">R$ 0,00</div><div class="note">Inclui o consumo informado e insumos técnicos do protocolo.</div></div>
-          <button class="pricebtn" data-kind="great"><span class="small">Preço Ótimo</span><strong id="pGreat">R$ 0,00</strong></button>
-          <button class="pricebtn active" data-kind="ideal"><span class="small">Preço Ideal</span><strong id="pIdeal">R$ 0,00</strong></button>
-          <button class="pricebtn" data-kind="limit"><span class="small">Preço Limite</span><strong id="pLimit">R$ 0,00</strong></button>
+          <button class="pricebtn" data-kind="great"><span class="small">Preço Premium <span id="rGreat"></span></span><strong id="pGreat">R$ 0,00</strong></button>
+          <button class="pricebtn active" data-kind="ideal"><span class="small">Preço Recomendado <span id="rIdeal"></span></span><strong id="pIdeal">R$ 0,00</strong></button>
+          <button class="pricebtn" data-kind="limit"><span class="small">Preço Estratégico <span id="rLimit"></span></span><strong id="pLimit">R$ 0,00</strong></button>
+          <div class="note">O preço recomendado é a referência padrão da Ruê. O estratégico prioriza competitividade e o premium amplia a proteção de margem.</div>
           <div class="break">
-            <strong id="breakTitle" style="color:var(--brand)">Composição do Preço Ideal</strong>
+            <strong id="breakTitle" style="color:var(--brand)">Composição do Preço Recomendado</strong>
             <div class="breakrow"><span>Remuneração do profissional (35%)</span><span id="bComm">R$ 0,00</span></div>
             <div class="breakrow"><span>Produtos e insumos</span><span id="bProd">R$ 0,00</span></div>
             <div class="breakrow"><span>Impostos estimados sobre a cota do salão</span><span id="bTax">R$ 0,00</span></div>
@@ -83,7 +84,7 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
             <div class="field"><label>Nome do produto</label><input id="aName" placeholder="Ex.: Tinta Color"></div>
           </div>
           <div class="grid2">
-            <div class="field"><label>Categoria</label><select id="aCat"><option value="coloracao">Coloração</option><option value="superclareador">Superclareador / Clareador</option><option value="tonalizante">Tonalizante</option><option value="oxidante">Oxidante</option><option value="emulsao">Emulsão / Revelador</option><option value="descolorante">Descolorante</option><option value="outro">Outro</option></select></div>
+            <div class="field"><label>Categoria</label><select id="aCat"><option value="coloracao">Coloração</option><option value="coloracao_rapida">Coloração rápida</option><option value="superclareador">Superclareador / Clareador</option><option value="tonalizante">Tonalizante</option><option value="oxidante">Oxidante</option><option value="emulsao">Emulsão / Revelador</option><option value="descolorante">Descolorante</option><option value="outro">Outro</option></select></div>
             <div class="field"><label>Unidade</label><select id="aUnit"><option value="g">g</option><option value="ml">ml</option><option value="un">un</option></select></div>
           </div>
           <div class="grid2">
@@ -99,13 +100,16 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
         </div>
         <div class="card">
           <h3 style="margin-top:0;color:var(--brand)">Parâmetros da unidade</h3>
-          <div class="small">Edite os parâmetros da unidade selecionada acima.</div>
+          <div class="small">Edite os parâmetros da unidade selecionada acima. A estrutura é uma meta de precificação definida pela empresa e pode ser diferente entre SP e RO.</div>
           <div class="grid2">
             <div class="field"><label>Comissão %</label><input id="sComm" inputmode="decimal"></div>
             <div class="field"><label>Impostos % <span class="small">(sobre a cota do salão)</span></label><input id="sTax" inputmode="decimal"></div>
             <div class="field"><label>Taxas financeiras %</label><input id="sFee" inputmode="decimal"></div>
-            <div class="field"><label>Estrutura %</label><input id="sStruct" inputmode="decimal"></div>
+            <div class="field"><label>Estrutura-alvo %</label><input id="sStruct" inputmode="decimal"></div>
             <div class="field"><label>Insumos técnicos R$</label><input id="sTechnical" inputmode="decimal"></div>
+            <div class="field"><label>Premium — produtos %</label><input id="sGreat" inputmode="decimal"></div>
+            <div class="field"><label>Recomendado — produtos %</label><input id="sIdeal" inputmode="decimal"></div>
+            <div class="field"><label>Estratégico — produtos %</label><input id="sLimit" inputmode="decimal"></div>
             <div class="field"><label>Arredondamento R$</label><input id="sRound" inputmode="decimal"></div>
           </div>
           <button id="saveSettings" style="margin-top:12px">Salvar parâmetros</button>
@@ -216,7 +220,8 @@ function calculate(){
  [...$("calcLines").children].forEach(el=>{const p=products.find(x=>String(x.id)===el.querySelector(".lp").value);const q=num(el.querySelector(".lq").value);let c=0;if(p)c=(productCost(p.id)/Number(p.package_qty))*q;productTotal+=c;el.querySelector(".item-cost strong").textContent=money(c)});
  const total=productTotal+Number(settings.technical_supplies_cost||0);const step=Number(settings.round_step||5);const round=v=>Math.round(v/step)*step;
  const prices={great:round(total/Number(settings.target_great)),ideal:round(total/Number(settings.target_ideal)),limit:round(total/Number(settings.target_limit))};
- $("variableCost").textContent=money(total);$("pGreat").textContent=money(prices.great);$("pIdeal").textContent=money(prices.ideal);$("pLimit").textContent=money(prices.limit);renderBreak(prices,total)
+ $("variableCost").textContent=money(total);$("pGreat").textContent=money(prices.great);$("pIdeal").textContent=money(prices.ideal);$("pLimit").textContent=money(prices.limit);
+ $("rGreat").textContent="("+pct(settings.target_great)+")";$("rIdeal").textContent="("+pct(settings.target_ideal)+")";$("rLimit").textContent="("+pct(settings.target_limit)+")";renderBreak(prices,total)
 }
 function renderBreak(prices,total){
  const price=prices[selectedKind]||0;
@@ -226,7 +231,9 @@ function renderBreak(prices,total){
  const fee=price*Number(settings.financial_fee_rate);
  const structure=price*Number(settings.structure_rate);
  const salon=price-comm-total-tax-fee-structure;
- $("breakTitle").textContent="Composição do Preço "+({great:"Ótimo",ideal:"Ideal",limit:"Limite"}[selectedKind]);
+ $("breakTitle").textContent="Composição do Preço "+({great:"Premium",ideal:"Recomendado",limit:"Estratégico"}[selectedKind]);
+ const commPct=(Number(settings.commission_rate)*100).toFixed(0).replace(".",",");
+ document.querySelector("#bComm").previousElementSibling.textContent="Remuneração do profissional ("+commPct+"%)";
  $("bComm").textContent=money(comm);
  $("bProd").textContent=money(total);
  $("bTax").textContent=money(tax);
@@ -236,9 +243,9 @@ function renderBreak(prices,total){
 }
 function showTab(tab){$("calcTab").classList.toggle("hidden",tab!=="calc");$("adminTab").classList.toggle("hidden",tab!=="admin");document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));if(tab==="admin")loadUsers()}
 function pct(v){return (Number(v||0)*100).toFixed(2).replace(".",",")}
-function fillSettings(){if(!settings)return;$("sComm").value=pct(settings.commission_rate);$("sTax").value=pct(settings.tax_rate);$("sFee").value=pct(settings.financial_fee_rate);$("sStruct").value=pct(settings.structure_rate);$("sTechnical").value=Number(settings.technical_supplies_cost).toFixed(2).replace(".",",");$("sRound").value=Number(settings.round_step).toFixed(2).replace(".",",")}
+function fillSettings(){if(!settings)return;$("sComm").value=pct(settings.commission_rate);$("sTax").value=pct(settings.tax_rate);$("sFee").value=pct(settings.financial_fee_rate);$("sStruct").value=pct(settings.structure_rate);$("sTechnical").value=Number(settings.technical_supplies_cost).toFixed(2).replace(".",",");$("sGreat").value=pct(settings.target_great);$("sIdeal").value=pct(settings.target_ideal);$("sLimit").value=pct(settings.target_limit);$("sRound").value=Number(settings.round_step).toFixed(2).replace(".",",")}
 async function saveSettings(){
- const code=$("adminUnit").value;const payload={commission_rate:num($("sComm").value)/100,tax_rate:num($("sTax").value)/100,financial_fee_rate:num($("sFee").value)/100,structure_rate:num($("sStruct").value)/100,technical_supplies_cost:num($("sTechnical").value),round_step:num($("sRound").value),updated_at:new Date().toISOString()};
+ const code=$("adminUnit").value;const payload={commission_rate:num($("sComm").value)/100,tax_rate:num($("sTax").value)/100,financial_fee_rate:num($("sFee").value)/100,structure_rate:num($("sStruct").value)/100,technical_supplies_cost:num($("sTechnical").value),target_great:num($("sGreat").value)/100,target_ideal:num($("sIdeal").value)/100,target_limit:num($("sLimit").value)/100,round_step:num($("sRound").value),updated_at:new Date().toISOString()};
  const {error}=await supabase.from("unit_settings").update(payload).eq("unit_code",code);if(error)return alert(error.message);await loadUnit(code);alert("Parâmetros salvos.")
 }
 async function saveProduct(){
