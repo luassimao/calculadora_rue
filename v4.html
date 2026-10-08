@@ -99,8 +99,15 @@ label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bot
           <div id="adminMsg" class="message"></div>
         </div>
         <div class="card">
-          <h3 style="margin-top:0;color:var(--brand)">Parâmetros da unidade</h3>
-          <div class="small">Edite os parâmetros da unidade selecionada acima. A estrutura é uma meta de precificação definida pela empresa e pode ser diferente entre SP e RO.</div>
+          <h3 style="margin-top:0;color:var(--brand)">Configuração financeira por salão</h3>
+          <div class="field" style="margin-top:8px">
+            <label>Salão desta configuração</label>
+            <select id="settingsUnit">
+              <option value="RO">Ruê Porto Velho</option>
+              <option value="SP">Ruê São Paulo</option>
+            </select>
+          </div>
+          <div class="small">Cada salão possui parâmetros próprios. Alterar Porto Velho não altera São Paulo, e vice-versa. A estrutura é uma meta de precificação definida pela empresa.</div>
           <div class="grid2">
             <div class="field"><label>Comissão %</label><input id="sComm" inputmode="decimal"></div>
             <div class="field"><label>Impostos % <span class="small">(sobre a cota do salão)</span></label><input id="sTax" inputmode="decimal"></div>
@@ -243,9 +250,9 @@ function renderBreak(prices,total){
 }
 function showTab(tab){$("calcTab").classList.toggle("hidden",tab!=="calc");$("adminTab").classList.toggle("hidden",tab!=="admin");document.querySelectorAll("[data-tab]").forEach(b=>b.classList.toggle("active",b.dataset.tab===tab));if(tab==="admin")loadUsers()}
 function pct(v){return (Number(v||0)*100).toFixed(2).replace(".",",")}
-function fillSettings(){if(!settings)return;$("sComm").value=pct(settings.commission_rate);$("sTax").value=pct(settings.tax_rate);$("sFee").value=pct(settings.financial_fee_rate);$("sStruct").value=pct(settings.structure_rate);$("sTechnical").value=Number(settings.technical_supplies_cost).toFixed(2).replace(".",",");$("sGreat").value=pct(settings.target_great);$("sIdeal").value=pct(settings.target_ideal);$("sLimit").value=pct(settings.target_limit);$("sRound").value=Number(settings.round_step).toFixed(2).replace(".",",")}
+function fillSettings(){if(!settings)return;if($("settingsUnit"))$("settingsUnit").value=$("adminUnit").value;$("sComm").value=pct(settings.commission_rate);$("sTax").value=pct(settings.tax_rate);$("sFee").value=pct(settings.financial_fee_rate);$("sStruct").value=pct(settings.structure_rate);$("sTechnical").value=Number(settings.technical_supplies_cost).toFixed(2).replace(".",",");$("sGreat").value=pct(settings.target_great);$("sIdeal").value=pct(settings.target_ideal);$("sLimit").value=pct(settings.target_limit);$("sRound").value=Number(settings.round_step).toFixed(2).replace(".",",")}
 async function saveSettings(){
- const code=$("adminUnit").value;const payload={commission_rate:num($("sComm").value)/100,tax_rate:num($("sTax").value)/100,financial_fee_rate:num($("sFee").value)/100,structure_rate:num($("sStruct").value)/100,technical_supplies_cost:num($("sTechnical").value),target_great:num($("sGreat").value)/100,target_ideal:num($("sIdeal").value)/100,target_limit:num($("sLimit").value)/100,round_step:num($("sRound").value),updated_at:new Date().toISOString()};
+ const code=$("settingsUnit")?.value||$("adminUnit").value;const payload={commission_rate:num($("sComm").value)/100,tax_rate:num($("sTax").value)/100,financial_fee_rate:num($("sFee").value)/100,structure_rate:num($("sStruct").value)/100,technical_supplies_cost:num($("sTechnical").value),target_great:num($("sGreat").value)/100,target_ideal:num($("sIdeal").value)/100,target_limit:num($("sLimit").value)/100,round_step:num($("sRound").value),updated_at:new Date().toISOString()};
  const {error}=await supabase.from("unit_settings").update(payload).eq("unit_code",code);if(error)return alert(error.message);await loadUnit(code);alert("Parâmetros salvos.")
 }
 async function saveProduct(){
@@ -273,7 +280,7 @@ async function renderAdmin(){
   }catch(e){alert(e.message||"Erro ao salvar produto.");btn.textContent="Salvar"}finally{btn.disabled=false}
  }));
 }
-$("loginBtn").addEventListener("click",login);$("logoutBtn").addEventListener("click",logout);$("createUserBtn").addEventListener("click",createUser);$("addLine").addEventListener("click",addLine);$("newCalc").addEventListener("click",()=>{renderLines(true);calculate()});$("saveProduct").addEventListener("click",saveProduct);$("saveSettings").addEventListener("click",saveSettings);$("adminUnit").addEventListener("change",()=>loadUnit($("adminUnit").value));document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));document.querySelectorAll(".pricebtn").forEach(b=>b.addEventListener("click",()=>{selectedKind=b.dataset.kind;document.querySelectorAll(".pricebtn").forEach(x=>x.classList.toggle("active",x===b));calculate()}));
+$("loginBtn").addEventListener("click",login);$("logoutBtn").addEventListener("click",logout);if($("settingsUnit"))$("settingsUnit").addEventListener("change",()=>{$("adminUnit").value=$("settingsUnit").value;loadUnit($("settingsUnit").value)});$("createUserBtn").addEventListener("click",createUser);$("addLine").addEventListener("click",addLine);$("newCalc").addEventListener("click",()=>{renderLines(true);calculate()});$("saveProduct").addEventListener("click",saveProduct);$("saveSettings").addEventListener("click",saveSettings);$("adminUnit").addEventListener("change",()=>loadUnit($("adminUnit").value));document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));document.querySelectorAll(".pricebtn").forEach(b=>b.addEventListener("click",()=>{selectedKind=b.dataset.kind;document.querySelectorAll(".pricebtn").forEach(x=>x.classList.toggle("active",x===b));calculate()}));
 document.addEventListener("focusin",e=>{
  const el=e.target;
  if(el instanceof HTMLInputElement && (el.inputMode==="decimal"||el.inputMode==="numeric")){
